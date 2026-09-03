@@ -46,8 +46,23 @@ identify_lu_diffs <- function(src_conn, tgt_conn) {
   return(lu_diffs)
 }
 
-
-
+## Corrects src_survey_event or src_survey_observation based on a CSV of 
+## updated lookup values as supplied by the user. This CSV allows the user
+## to provide mappings from values in tgt to values in src for any lookup
+## tables that are out of synch between the two databases. Rather than updating
+## the lookup table itself, the approach is to update the values in 
+## src_survey_event and src_survey_observation in R memory prior to inserting
+## records into tgt.
+## Parameter(s):
+##   src_table: table in R memory to modify.
+##   src_table_name: either "survey_event" or "survey_observation".
+##   src_conn: connection object to src database.
+##   corrections_csv: file path to CSV explaining which id values to update from 
+## each lookup table. Must contain three columns: "lu_table_name", "field_id_value", 
+## and "new_id_value". "lu_table_name" indicates which lookup table is out of synch 
+## between src and tgt, "field_id_value" is the value from the field database, and 
+## "new_id_value" is the value we want to update it to. If this is not a string, no 
+## updates are made.
 update_src <- function(src_table, src_table_name, src_conn, corrections_csv = FALSE) {
   
   if (is.character(corrections_csv)) {
@@ -105,7 +120,7 @@ update_src <- function(src_table, src_table_name, src_conn, corrections_csv = FA
           mutate(activity_code = str_replace_all(activity_code, 
                                                  paste0("(\\{|,)", corrections$field_id_value[i], "(\\}|,)"),
                                                  paste0("\\1", corrections$new_id_value[i], "\\2")))
-      } # Other tables should raise errors as our code was not designed (yet) to handle them
+      } # Other tables should raise warnings as our code was not designed (yet) to handle them
       else {
         warning(src_table_name, " not configured to handle updates to ", corrections$lu_table_name[i],
              ". Review code if updates are expected here.")
@@ -116,9 +131,3 @@ update_src <- function(src_table, src_table_name, src_conn, corrections_csv = FA
     return(src_table)
   }
 }
-
-
-
-
-
-
