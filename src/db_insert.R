@@ -63,7 +63,7 @@ append_peregrine_data <- function(src_conn, tgt_conn) {
   format_datetime <- function(dt) {
     as.POSIXct(dt,
                "%Y-%m-%dT%H:%M:%S",
-               tz="America/Anchorage")
+               tz="UTC")
   }
 
   ## Map new ID's. Format datetime columns.
