@@ -3,7 +3,10 @@
 ## Returns ODBC connection to database.
 ## - conn_string: valid ODBC connection string.
 get_access_connection <- function(conn_string) {
-  conn <- DBI::dbConnect(odbc::odbc(), .connection_string = conn_string)
+  conn <- DBI::dbConnect(odbc::odbc(), 
+                         .connection_string = conn_string,
+                         timezone = "America/Anchorage",
+                         timezone_out = "America/Anchorage")
   return(conn)
 }
 
