@@ -3,4 +3,6 @@
 .RData
 .Ruserdata
 import.R
+data/
 db_update.R
+.emacs.desktop
