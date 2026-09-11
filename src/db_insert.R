@@ -29,14 +29,14 @@ append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE) {
 
   src_survey_event <- get_table(src_conn, "survey_event") |>
     select(-geom) |>
-    update_src(src_table_name = "survey_event", 
-               src_conn = src_conn, 
+    update_src(src_table_name = "survey_event",
+               src_conn = src_conn,
                corrections_csv = corrections_csv)
-  
+
   src_survey_obs <- get_table(src_conn, "survey_observation") |>
-    update_src(src_table_name = "survey_observation", 
-               src_conn = src_conn, 
-               corrections_csv = corrections_csv) 
+    update_src(src_table_name = "survey_observation",
+               src_conn = src_conn,
+               corrections_csv = corrections_csv)
 
   max_tgt_event_id <- get_query(tgt_conn,
                                 paste("SELECT max(survey_event_id) AS max_id",
