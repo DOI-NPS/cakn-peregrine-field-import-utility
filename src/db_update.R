@@ -1,36 +1,32 @@
 
-## Returns a list with an entry for each lookup table used in the field.
-## Each entry in the list is empty if the field (src) copy matches the
-## office (tgt) copy; alternatively, contains output from diffdf showing
-## differences between the tables.
-## Parameter(s):
-##   src_conn: connection object to src database.
-##   tgt_conn: connection object to tgt database.
-##   folder: if false, prints to console. Otherwise, file path to a folder
-## where the log file will be saved.
-identify_lu_diffs <- function(src_conn, tgt_conn, folder = FALSE) {
+get_session_info <- function() {
+  info <- paste0(
+    "========================================================================================\n",
+    "SESSION INFO\n",
+    "========================================================================================\n",
+    "USER: ", Sys.info()[["user"]], "\n",
+    "DATETIME: ", format(Sys.time(), "%B %d, %Y %H:%M:%S"), "\n",
+    "NOTE: \n - SRC = .gpkg = BASE \n - TGT = .accdb = COMPARE\n\n")
+
+  return(info)
+}
+
+get_table_header <- function(tbl_name) {
+  tbl_header <- paste0(
+    "========================================================================================\nTABLE:",
+    tbl_name,
+    "\n========================================================================================\n")
+
+  return(tbl_header)
+}
+
+## Return a list of diffdf objects, for each lookup table comparison.
+identify_lu_diffs <- function(src_conn, tgt_conn) {
   # Names of lookup tables to check
   lu_table_names <- c("activity_lu", "nest_content_lu", "nest_observation_lu",
                       "nesting_stage_lu", "observation_estimate_lu", "observer_lu",
                       "site", "species_lu", "truth_lu", "viewing_condition_lu",
                       "visit_lu", "whitewash_lu")
-
-  # Different behavior for print vs write mode
-  if (is.character(folder)) {
-    file <- file.path(folder, paste0("diff_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
-    file.create(file)
-    sink(file, append = TRUE)
-    on.exit(sink())  # ensures sink closes even if an error occurs
-  }
-
-  # Log file metadata
-  cat("========================================================================================\n",
-      "SESSION INFO\n",
-      "========================================================================================\n",
-      "USER: ", Sys.info()[["user"]], "\n",
-      "DATETIME: ", format(Sys.time(), "%B %d, %Y %H:%M:%S"), "\n",
-      "NOTE: \n - SRC = .gpkg = BASE \n - TGT = .accdb = COMPARE\n\n",
-      sep = "")
 
   # Loop over the lookup tables, identifying differences for each table
     lu_diffs <- lapply(lu_table_names, function(table_name) {
@@ -39,14 +35,34 @@ identify_lu_diffs <- function(src_conn, tgt_conn, folder = FALSE) {
       src_lu <- get_table(src_conn, table_name) |>
         dplyr::select(colnames(tgt_lu)) # select only the columns that are present in tgt to facilitate comparisons
 
-      cat("========================================================================================\nTABLE:",
-          table_name,
-          "\n========================================================================================\n")
-      print(diffdf::diffdf(src_lu, tgt_lu, suppress_warnings = TRUE))
+      diffdf::diffdf(src_lu, tgt_lu, suppress_warnings = TRUE)
     })
 
   names(lu_diffs) <- lu_table_names
   return(lu_diffs)
+}
+
+print_diffs <- function(src_conn, tgt_conn) {
+  cat(get_session_info())
+
+  diffs <- identify_lu_diffs(src_conn, tgt_conn)
+
+  for (tbl_name in names(diffs)) {
+    cat(get_table_header(tbl_name))
+    print(diffs[[tbl_name]])
+  }
+}
+
+write_diffs <- function(src_conn, tgt_conn, dir_path) {
+  # Different behavior for print vs write mode
+  if (is.character(dir_path)) {
+    file <- file.path(dir_path, paste0("diff_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
+    file.create(file)
+    sink(file, append = TRUE)
+    on.exit(sink())  # ensures sink closes even if an error occurs
+  }
+
+  print_diffs(src_conn, tgt_conn)
 }
 
 ## Corrects src_survey_event or src_survey_observation based on a CSV of
