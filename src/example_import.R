@@ -3,6 +3,7 @@ library(DBI)
 library(RSQLite)
 library(tidyverse)
 library(here)
+library(diffdf)
 
 source("db_tools.R")
 source("db_update.R")
@@ -40,7 +41,11 @@ main <- function() {
 
     if (opt == 'l') {
       cat("Finding lookup table diffs...\n")
-      lu_diffs <- identify_lu_diffs(src_conn, tgt_conn)
+      print_diffs(src_conn, tgt_conn)
+      cat("\nDone!\n\n")
+    } else if (opt == 'lw') {
+      cat("Finding lookup table diffs...\n")
+      write_diffs(src_conn, tgt_conn, LOG_DIR)
       cat("\nDone!\n\n")
     } else if (opt == 'ac') {
       if (file.exists(CORRECTIONS_CSV)) {
