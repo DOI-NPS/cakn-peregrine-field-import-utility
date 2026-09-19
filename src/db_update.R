@@ -54,15 +54,18 @@ print_diffs <- function(src_conn, tgt_conn) {
 }
 
 write_diffs <- function(src_conn, tgt_conn, dir_path) {
-  # Different behavior for print vs write mode
-  if (is.character(dir_path)) {
-    file <- file.path(dir_path, paste0("diff_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
-    file.create(file)
+
+  file <- file.path(dir_path, paste0("diff_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
+
+  success <- file.create(file, showWarnings = FALSE)
+
+  if (success) {
     sink(file, append = TRUE)
     on.exit(sink())  # ensures sink closes even if an error occurs
+    print_diffs(src_conn, tgt_conn)
   }
 
-  print_diffs(src_conn, tgt_conn)
+  return(success)
 }
 
 ## Corrects src_survey_event or src_survey_observation based on a CSV of

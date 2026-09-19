@@ -45,8 +45,11 @@ main <- function() {
       cat("\nDone!\n\n")
     } else if (opt == 'lw') {
       cat("Finding lookup table diffs...\n")
-      write_diffs(src_conn, tgt_conn, LOG_DIR)
-      cat("\nDone!\n\n")
+      if (write_diffs(src_conn, tgt_conn, LOG_DIR)) {
+          cat("\nDone!\n\n")
+      } else {
+          cat("\n*****\nAn ERROR occured when writing log file.\nIs the LOG directory path VALID?\n*****\n\n")
+      }
     } else if (opt == 'ac') {
       if (file.exists(CORRECTIONS_CSV)) {
         cat("Appending data...\n")
