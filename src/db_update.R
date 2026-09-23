@@ -120,9 +120,9 @@ update_src <- function(src_table, src_table_name, src_conn, corrections_csv = FA
         for (j in seq_len(nrow(fk_flt))) {
           fk_from <- fk_flt$from[j]
           src_table <- src_table |>
-            mutate(!!fk_flt$from[j] := if_else(.data[[fk_from]] == corr_old_id,
-                                               corr_old_id,
-                                               .data[[fk_from]]))
+            mutate(!!fk_from := if_else(.data[[fk_from]] == corr_old_id,
+                                        corr_new_id,
+                                        .data[[fk_from]]))
         }
       } # Scenario: table is site (MVF and also not in foreign key list)
       else if (corr_tbl_name == "site") {
