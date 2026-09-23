@@ -103,48 +103,52 @@ update_src <- function(src_table, src_table_name, src_conn, corrections_csv = FA
     }
 
     # Get list of foreign keys in src_table
-    foreign_key_list <- DBI::dbGetQuery(src_conn, paste0("PRAGMA foreign_key_list(", src_table_name, ");"))
+    fk_list <- DBI::dbGetQuery(src_conn, paste0("PRAGMA foreign_key_list(", src_table_name, ");"))
 
     # Loop over rows from csv
     for (i in seq_len(nrow(corrections))) {
+      corr_tbl_name <- corrections$lu_table_name[i]
+      corr_old_id <- corrections$field_id_value[i]
+      corr_new_id <- corrections$new_id_value[i]
 
       # Scenario: table is in foreign key list
-      if (corrections$lu_table_name[i] %in% foreign_key_list$table) {
-        changes <- foreign_key_list |>
-          filter(table == corrections$lu_table_name[i])
+      if (corr_tbl_name %in% fk_list$table) {
+        fk_list <- fk_list |>
+          filter(table == corr_tbl_name)
 
         # Loop over relevant relationships for given lookup table
-        for (j in seq_len(nrow(changes))) {
+        for (j in seq_len(nrow(fk_list))) {
+          fk_from <- fk_list$from[j]
           src_table <- src_table |>
-            mutate(!!changes$from[j] := if_else(.data[[changes$from[j]]] == corrections$field_id_value[i],
-                                                corrections$new_id_value[i],
-                                                .data[[changes$from[j]]]))
+            mutate(!!fk_list$from[j] := if_else(.data[[fk_from]] == corr_old_id,
+                                                corr_old_id,
+                                                .data[[fk_from]]))
         }
       } # Scenario: table is site (MVF and also not in foreign key list)
-      else if (corrections$lu_table_name[i] == "site") {
+      else if (corr_tbl_name == "site") {
         if (src_table_name == "survey_event") {
           src_table <- src_table |>
-            mutate(site_id = if_else(site_id == corrections$field_id_value[i],
-                                     corrections$new_id_value[i],
+            mutate(site_id = if_else(site_id == corr_old_id,
+                                     corr_new_id,
                                      site_id),
                    concurrent_obs_sites = str_replace_all(concurrent_obs_sites,
-                                                          paste0("(\\{|,)", corrections$field_id_value[i], "(\\}|,)"),
-                                                          paste0("\\1", corrections$new_id_value[i], "\\2")))
+                                                          paste0("(\\{|,)", corr_old_id, "(\\}|,)"),
+                                                          paste0("\\1", corr_new_id, "\\2")))
         } else if (src_table_name == "survey_observation") {
           src_table <- src_table |>
             mutate(additional_sites_used = str_replace_all(additional_sites_used,
-                                                           paste0("(\\{|,)", corrections$field_id_value[i], "(\\}|,)"),
-                                                           paste0("\\1", corrections$new_id_value[i], "\\2")))
+                                                           paste0("(\\{|,)", corr_old_id, "(\\}|,)"),
+                                                           paste0("\\1", corr_new_id, "\\2")))
         }
       } # Scenario: table is activity_lu (MVF)
-      else if (corrections$lu_table_name[i] == "activity_lu" & src_table_name == "survey_observation") {
+      else if (corr_tbl_name == "activity_lu" & src_table_name == "survey_observation") {
         src_table <- src_table |>
           mutate(activity_code = str_replace_all(activity_code,
-                                                 paste0("(\\{|,)", corrections$field_id_value[i], "(\\}|,)"),
-                                                 paste0("\\1", corrections$new_id_value[i], "\\2")))
+                                                 paste0("(\\{|,)", corr_old_id, "(\\}|,)"),
+                                                 paste0("\\1", corr_new_id, "\\2")))
       } # Other tables should raise warnings as our code was not designed (yet) to handle them
       else {
-        warning(src_table_name, " not configured to handle updates to ", corrections$lu_table_name[i],
+        warning(src_table_name, " not configured to handle updates to ", corr_tbl_name,
              ". Review code if updates are expected here.")
       }
     }
