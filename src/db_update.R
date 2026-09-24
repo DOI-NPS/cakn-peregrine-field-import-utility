@@ -153,7 +153,7 @@ update_src <- function(src_table, src_table_name, src_conn, corrections_csv = FA
       }
     }
     return(src_table)
-  } else{
+  } else {
     return(src_table)
   }
 }
