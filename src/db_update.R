@@ -42,10 +42,8 @@ identify_lu_diffs <- function(src_conn, tgt_conn) {
   return(lu_diffs)
 }
 
-print_diffs <- function(src_conn, tgt_conn) {
+print_diffs <- function(diffs) {
   cat(get_session_info())
-
-  diffs <- identify_lu_diffs(src_conn, tgt_conn)
 
   for (tbl_name in names(diffs)) {
     cat(get_table_header(tbl_name))
@@ -53,8 +51,7 @@ print_diffs <- function(src_conn, tgt_conn) {
   }
 }
 
-write_diffs <- function(src_conn, tgt_conn, dir_path) {
-
+write_diffs <- function(diffs, dir_path) {
   file <- file.path(dir_path, paste0("diff_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
 
   success <- file.create(file, showWarnings = FALSE)
@@ -62,7 +59,7 @@ write_diffs <- function(src_conn, tgt_conn, dir_path) {
   if (success) {
     sink(file, append = TRUE)
     on.exit(sink())  # ensures sink closes even if an error occurs
-    print_diffs(src_conn, tgt_conn)
+    print_diffs(diffs)
   }
 
   return(success)

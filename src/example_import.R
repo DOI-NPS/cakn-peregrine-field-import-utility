@@ -41,11 +41,13 @@ main <- function() {
 
     if (opt == 'l') {
       cat("Finding lookup table diffs...\n")
-      print_diffs(src_conn, tgt_conn)
+      diffs <- identify_lu_diffs(src_conn, tgt_conn)
+      print_diffs(diffs)
       cat("\nDone!\n\n")
     } else if (opt == 'lw') {
       cat("Finding lookup table diffs...\n")
-      if (write_diffs(src_conn, tgt_conn, LOG_DIR)) {
+      diffs <- identify_lu_diffs(src_conn, tgt_conn)
+      if (write_diffs(diffs, LOG_DIR)) {
           cat("\nDone!\n\n")
       } else {
           cat("\n*****\nAn ERROR occured when writing log file.\nIs the LOG directory path VALID?\n*****\n\n")
