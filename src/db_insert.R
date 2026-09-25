@@ -22,21 +22,35 @@ insert_mvf <- function(con, tgt_table_name, r_table, mvf_column_name, id_column_
   }
 }
 
-append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE) {
+append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, dry_run = FALSE) {
   # ---------------------------
   # Read data
   # ---------------------------
 
   src_survey_event <- get_table(src_conn, "survey_event") |>
-    select(-geom) |>
-    update_src(src_table_name = "survey_event",
-               src_conn = src_conn,
-               corrections_csv = corrections_csv)
+    select(-geom)
 
-  src_survey_obs <- get_table(src_conn, "survey_observation") |>
-    update_src(src_table_name = "survey_observation",
-               src_conn = src_conn,
-               corrections_csv = corrections_csv)
+  src_survey_obs <- get_table(src_conn, "survey_observation")
+
+  src_tbl_list <- list("survey_event" = src_survey_event,
+                       "survey_observation" = src_survey_obs)
+
+  src_tbl_list <- update_src(src_tbl_list, corrections_csv)
+
+  if (dry_run) {
+    event_diff <- diffdf::diffdf(src_survey_event, src_tbl_list$survey_event,
+                                 suppress_warnings = TRUE,
+                                 strict_numeric = FALSE)
+    obs_diff <- diffdf::diffdf(src_survey_obs, src_tbl_list$survey_observation,
+                               suppress_warnings = TRUE,
+                               strict_numeric = FALSE)
+
+    diffs <- list("survey_event" = event_diff, "survey_observation" = obs_diff)
+    return(diffs)
+  }
+
+  src_survey_event <- src_tbl_list$survey_event
+  src_survey_obs <- src_tbl_list$survey_observation
 
   max_tgt_event_id <- get_query(tgt_conn,
                                 paste("SELECT max(survey_event_id) AS max_id",
