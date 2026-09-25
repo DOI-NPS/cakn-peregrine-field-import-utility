@@ -27,15 +27,29 @@ main <- function() {
     DBI::dbDisconnect(tgt_conn)
   }, add = TRUE)
 
+  has_corr_file <- has_path(CORRECTIONS_CSV)
+
+  if (is.null(has_corr_file)) {
+      stop("The value of Variable 'CORRECTIONS_CSV' must be 'NULL' OR ",
+           "a string of a valid file path.")
+  }
+
+  has_log_dir <- has_path(LOG_DIR)
+
+  if (is.null(has_log_dir)) {
+      stop("The value variable 'LOG_DIR' must be 'NULL' OR ",
+           "a string of a valid directory path.")
+  }
+
   repeat {
     cat("Options:",
-        "l  - find lookup table diffs and print to screen",
-        "lw - find lookup table diffs and write to file",
+        "lp - find lookup table diffs and print to screen AND,",
+        "     if it exists, write to a log file in directory LOG_DIR.",
+        "lw - find lookup table diffs and write to a log file in LOG_DIR\n",
         "ac - append data from source to target db WITH corrections file.",
-        "dr = do dry run; append data from source to target db WITH corrections file;",
-        "     write diff output to file in LOG directory; if this fails,",
-        "     print to screen.",
-        "aw - append data from source to target db WITHOUT corrections file.",
+        "dr - do a dry run; append data from source to target db WITH corrections file;",
+        "     write diff output to file in LOG directory. If log file does not exist,",
+        "     print to screen.\n",
         "q  - quit this program\n",
         sep = "\n")
 
@@ -43,38 +57,43 @@ main <- function() {
 
     opt <- readline("Enter an option: ")
 
-    if (opt == 'l') {
+    if (opt == 'lp') {
       cat("Finding lookup table diffs...\n")
       diffs <- identify_lu_diffs(src_conn, tgt_conn)
       print_diffs(diffs)
+      if (has_log_dir) {
+          write_diffs(diffs, LOG_DIR)
+      }
       cat("\nDone!\n\n")
     } else if (opt == 'lw') {
       cat("Finding lookup table diffs...\n")
       diffs <- identify_lu_diffs(src_conn, tgt_conn)
-      if (write_diffs(diffs, LOG_DIR)) {
+      if (has_log_dir) {
+          write_diffs(diffs, LOG_DIR)
           cat("\nDone!\n\n")
       } else {
-          cat("\n*****\nAn ERROR occured when writing log file.\nIs the LOG directory path VALID?\n*****\n\n")
+        cat("\nLog directory path not provided. Log file not created.\n\n")
       }
     } else if (opt == 'ac') {
-      if (file.exists(CORRECTIONS_CSV)) {
+      if (has_corr_file) {
         cat("Appending data...\n")
         append_peregrine_data(src_conn, tgt_conn, CORRECTIONS_CSV)
         cat("\nDone!\n\n")
       } else {
-        cat("\nCan't find corrections file. Fix file path.\n")
+        cat("\nCorrections file path not provided. Data not appended.\n\n")
       }
     } else if (opt == 'dr') {
-      if (file.exists(CORRECTIONS_CSV)) {
+      if (has_corr_file) {
         cat("Appending data...\n")
         diffs <- append_peregrine_data(src_conn, tgt_conn, CORRECTIONS_CSV, dry_run = TRUE)
-        if (write_diffs(diffs, LOG_DIR, dry_run = TRUE)) {
+        if (has_log_dir) {
+            write_diffs(diffs, LOG_DIR, dry_run = TRUE)
         } else {
             print_diffs(diffs)
         }
         cat("\nDone!\n\n")
       } else {
-        cat("\nCan't find corrections file. Fix file path.\n")
+        cat("\nCorrections file path not provided. Data not appended.\n\n")
       }
     } else if (opt == 'aw') {
       cat("Appending data...\n")
@@ -86,5 +105,13 @@ main <- function() {
     } else {
       cat("*** Must choose an option ***\n")
     }
+  }
+}
+
+has_path <- function(path) {
+  if (is.null(path)) {
+    return(FALSE)
+  } else if (file.exists(path)) {
+    return(TRUE)
   }
 }
