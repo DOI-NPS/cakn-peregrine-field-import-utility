@@ -1,27 +1,4 @@
 
-
-insert_mvf <- function(con, tgt_table_name, r_table, mvf_column_name, id_column_name) {
-  # Loop over the records
-  for (i in seq_len(nrow(r_table))) {
-    # Account for NA values
-    if (!is.na(r_table[[mvf_column_name]][i])) {
-      # Identify id and values required for update
-      id <- r_table[[id_column_name]][i]
-      mvf_values <- r_table[[mvf_column_name]][i] |>
-        str_sub(2, -2) |>
-        str_split_1(",")
-      # Loop over the entries in the MVF
-      for (j in seq_along(mvf_values)) {
-        # Individual updates in database for each value in mvf_values
-        sql <- paste0("INSERT INTO ", tgt_table_name, " (",  mvf_column_name, ".Value)
-                       VALUES ('", mvf_values[j], "')
-                       WHERE ", id_column_name, " = ", id, ";")
-        DBI::dbExecute(con, sql)
-      }
-    }
-  }
-}
-
 append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, dry_run = FALSE) {
   # ---------------------------
   # Read data
@@ -150,4 +127,26 @@ append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, d
     message("Error occurred, changes rolled back: ", e$message)
   }
   )
+}
+
+insert_mvf <- function(con, tgt_table_name, r_table, mvf_column_name, id_column_name) {
+  # Loop over the records
+  for (i in seq_len(nrow(r_table))) {
+    # Account for NA values
+    if (!is.na(r_table[[mvf_column_name]][i])) {
+      # Identify id and values required for update
+      id <- r_table[[id_column_name]][i]
+      mvf_values <- r_table[[mvf_column_name]][i] |>
+        str_sub(2, -2) |>
+        str_split_1(",")
+      # Loop over the entries in the MVF
+      for (j in seq_along(mvf_values)) {
+        # Individual updates in database for each value in mvf_values
+        sql <- paste0("INSERT INTO ", tgt_table_name, " (",  mvf_column_name, ".Value)
+                       VALUES ('", mvf_values[j], "')
+                       WHERE ", id_column_name, " = ", id, ";")
+        DBI::dbExecute(con, sql)
+      }
+    }
+  }
 }

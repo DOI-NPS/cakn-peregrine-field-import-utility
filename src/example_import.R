@@ -8,6 +8,7 @@ library(diffdf)
 source("db_tools.R")
 source("db_update.R")
 source("db_insert.R")
+source("db_diff.R")
 
 SRC_CONN_STR <- "c:/file/path/source_db.gpkg"
 TGT_CONN_STR <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=target_db.accdb"
