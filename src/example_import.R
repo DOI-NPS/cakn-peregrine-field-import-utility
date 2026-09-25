@@ -50,6 +50,7 @@ main <- function() {
         "dr - do a dry run; append data from source to target db WITH corrections file;",
         "     write diff output to file in LOG directory. If log file does not exist,",
         "     print to screen.\n",
+        "aw - append data from source to target db WITHOUT corrections file.\n",
         "q  - quit this program\n",
         sep = "\n")
 
