@@ -31,6 +31,9 @@ main <- function() {
         "l  - find lookup table diffs and print to screen",
         "lw - find lookup table diffs and write to file",
         "ac - append data from source to target db WITH corrections file.",
+        "dr = do dry run; append data from source to target db WITH corrections file;",
+        "     write diff output to file in LOG directory; if this fails,",
+        "     print to screen.",
         "aw - append data from source to target db WITHOUT corrections file.",
         "q  - quit this program\n",
         sep = "\n")
@@ -56,6 +59,18 @@ main <- function() {
       if (file.exists(CORRECTIONS_CSV)) {
         cat("Appending data...\n")
         append_peregrine_data(src_conn, tgt_conn, CORRECTIONS_CSV)
+        cat("\nDone!\n\n")
+      } else {
+        cat("\nCan't find corrections file. Fix file path.\n")
+      }
+    } else if (opt == 'dr') {
+      if (file.exists(CORRECTIONS_CSV)) {
+        cat("Appending data...\n")
+        diffs <- append_peregrine_data(src_conn, tgt_conn, CORRECTIONS_CSV, dry_run = TRUE)
+        if (write_diffs(diffs, LOG_DIR, dry_run = TRUE)) {
+        } else {
+            print_diffs(diffs)
+        }
         cat("\nDone!\n\n")
       } else {
         cat("\nCan't find corrections file. Fix file path.\n")
