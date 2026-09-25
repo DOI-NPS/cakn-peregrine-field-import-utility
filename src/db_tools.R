@@ -1,5 +1,4 @@
 
-
 ## Returns ODBC connection to database.
 ## - conn_string: valid ODBC connection string.
 get_access_connection <- function(conn_string) {
@@ -32,7 +31,6 @@ get_table <- function(conn, tbl_name) {
 ##   query_str: query string statement of data to be returned.
 get_query <- function(conn, query_str) {
   qry <- DBI::dbGetQuery(conn, query_str)
-
   names(qry) <- tolower(names(qry))
 
   return(as_tibble(qry))
