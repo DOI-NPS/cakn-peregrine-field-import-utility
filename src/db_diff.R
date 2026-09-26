@@ -7,15 +7,22 @@ identify_lu_diffs <- function(src_conn, tgt_conn) {
                       "site", "species_lu", "truth_lu", "viewing_condition_lu",
                       "visit_lu", "whitewash_lu")
 
-  # Loop over the lookup tables, identifying differences for each table
-    lu_diffs <- lapply(lu_table_names, function(table_name) {
-      # Grab copies of the lookup tables from tgt and src
-      tgt_lu <- get_table(tgt_conn, table_name)
-      src_lu <- get_table(src_conn, table_name) |>
-        dplyr::select(colnames(tgt_lu)) # select only the columns that are present in tgt to facilitate comparisons
+  lu_pk_col <- paste0(lu_table_names, "_id")
 
-      diffdf::diffdf(src_lu, tgt_lu, suppress_warnings = TRUE)
-    })
+  df_pk_col <- data.frame(table_name = lu_table_names, pk_col_name = lu_pk_col)
+
+  # Loop over the lookup tables, identifying differences for each table
+  lu_diffs <- lapply(lu_table_names,
+                     function(table_name) {
+                       # Grab copies of the lookup tables from tgt and src
+                       tgt_lu <- get_table(tgt_conn, table_name)
+                       src_lu <- get_table(src_conn, table_name) |>
+                         dplyr::select(colnames(tgt_lu)) # select only the columns that are present in tgt to facilitate comparisons
+
+                       pk_col <- df_pk_col$pk_col_name[df_pk_col$table_name == table_name]
+
+                       diffdf::diffdf(src_lu, tgt_lu, keys = pk_col, suppress_warnings = TRUE)
+                     })
 
   names(lu_diffs) <- lu_table_names
   return(lu_diffs)
