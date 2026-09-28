@@ -35,3 +35,15 @@ get_query <- function(conn, query_str) {
 
   return(as_tibble(qry))
 }
+
+format_datetime_utc <- function(dt) {
+  as.POSIXct(dt,
+             "%Y-%m-%dT%H:%M:%S",
+             tz="UTC")
+}
+
+format_date_ak  <- function(d) {
+  as.POSIXct(d,
+             "%Y-%m-%d",
+             tz="America/Anchorage")
+}

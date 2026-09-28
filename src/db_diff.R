@@ -1,31 +1,80 @@
 
 ## Return a list of diffdf objects, for each lookup table comparison.
 identify_lu_diffs <- function(src_conn, tgt_conn) {
-  # Names of lookup tables to check
+
   lu_table_names <- c("activity_lu", "nest_content_lu", "nest_observation_lu",
                       "nesting_stage_lu", "observation_estimate_lu", "observer_lu",
                       "site", "species_lu", "truth_lu", "viewing_condition_lu",
                       "visit_lu", "whitewash_lu")
 
-  lu_pk_col <- paste0(lu_table_names, "_id")
+  lu_pk_cols <- paste0(lu_table_names, "_id")
 
-  df_pk_col <- data.frame(table_name = lu_table_names, pk_col_name = lu_pk_col)
+  diffs <- identify_diffs(src_conn, tgt_conn, lu_table_names, lu_pk_cols)
+
+  return(diffs)
+}
+
+identify_event_diffs <- function(src_conn, tgt_conn, alternate_key = FALSE) {
+
+  if (alternate_key) {
+    event_keys <- list(c("site_id", "survey_date", "start_time", "senior_observer"))
+    diffs <- identify_diffs(src_conn, tgt_conn, "survey_event", event_keys)
+  } else {
+    diffs <- identify_diffs(src_conn, tgt_conn, "survey_event", "survey_event_id")
+  }
+
+  return(diffs)
+}
+
+identify_obs_diffs <- function(src_conn, tgt_conn) {
+    diffs <- identify_diffs(src_conn, tgt_conn, "survey_observation", "survey_observation_id")
+}
+
+## NOTE on parameters:
+##   compare_tbls - a vector of table names
+##   compare_keys - a vector of primary key column names,
+##                  or a list of vectors.
+##                  For example, if there are two or more columns that comprise the primary key,
+##                  pass a list of vectors:
+##                    keys <- list("a_id", "b_id", c("d_id", "e_id"))
+##                  otherwise passing a vector of keys suffice:
+##                    keys <- c("a_id", "b_id", "d_id", "e_id")
+##                  or, merely, the a key:
+##                    keys <- "a_id"
+## NOTE: The number of items in compare_tbls and compare_keys must be equal.
+identify_diffs <- function(src_conn, tgt_conn, compare_tbls, compare_keys) {
+
+  df_pk_col <- tibble(table_name = compare_tbls, pk_col_name = compare_keys)
 
   # Loop over the lookup tables, identifying differences for each table
-  lu_diffs <- lapply(lu_table_names,
-                     function(table_name) {
-                       # Grab copies of the lookup tables from tgt and src
-                       tgt_lu <- get_table(tgt_conn, table_name)
-                       src_lu <- get_table(src_conn, table_name) |>
-                         dplyr::select(colnames(tgt_lu)) # select only the columns that are present in tgt to facilitate comparisons
+  diffs <- lapply(compare_tbls,
+                  function(tbl_name) {
+                    # Grab copies of the lookup tables from tgt and src
+                    tgt_tbl <- get_table(tgt_conn, tbl_name)
+                    src_tbl <- get_table(src_conn, tbl_name)
 
-                       pk_col <- df_pk_col$pk_col_name[df_pk_col$table_name == table_name]
+                    if (tbl_name == "survey_event") {
+                      src_tbl <- format_event_tbl(src_tbl)
+                    }
 
-                       diffdf::diffdf(src_lu, tgt_lu, keys = pk_col, suppress_warnings = TRUE)
-                     })
+                    # select only the columns that are present in tgt to facilitate comparisons
+                    src_tbl <- src_tbl |>
+                      dplyr::select(colnames(tgt_tbl))
+                    pk_cols <- unlist(select(filter(df_pk_col, table_name == tbl_name), pk_col_name))
 
-  names(lu_diffs) <- lu_table_names
-  return(lu_diffs)
+                    diffdf::diffdf(src_tbl, tgt_tbl, keys = pk_cols, suppress_warnings = TRUE)
+                  })
+
+  names(diffs) <- compare_tbls
+  return(diffs)
+}
+
+format_event_tbl <- function(tbl_df) {
+  tbl_df <- tbl_df |>
+    select(-geom) |>
+    mutate(survey_date = format_date_ak(survey_date)) |>
+    mutate(record_inserted_date = format_datetime_utc(record_inserted_date)) |>
+    mutate(record_updated_date = format_datetime_utc(record_updated_date))
 }
 
 write_diffs <- function(diffs, dir_path, dry_run = FALSE) {
