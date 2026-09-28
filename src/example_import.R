@@ -43,15 +43,18 @@ main <- function() {
 
   repeat {
     cat("Options:",
-        "lp - find lookup table diffs and print to screen AND,",
-        "     if it exists, write to a log file in directory LOG_DIR.",
-        "lw - find lookup table diffs and write to a log file in LOG_DIR\n",
-        "ac - append data from source to target db WITH corrections file.",
-        "dr - do a dry run; append data from source to target db WITH corrections file;",
-        "     write diff output to file in LOG directory. If log file does not exist,",
-        "     print to screen.\n",
-        "aw - append data from source to target db WITHOUT corrections file.\n",
-        "q  - quit this program\n",
+        "lp  - print LOOKUP table diffs to screen.",
+        "lw  - print LOOKUP table diffs and write to a log file in LOG_DIR (if exists)\n",
+        "ew  - print survey_EVENT table diffs AND write to a log file in LOG_DIR (if exists)",
+        "ewa - print survey_EVENT table, using alternate key, diffs AND",
+        "      write to a log file in LOG_DIR (if exists)\n",
+        "ow  - print survey_OBSERVATION table diffs and write to a log file in LOG_DIR (if exists)\n",
+        "ac  - append data from source to target db WITH corrections file.",
+        "dr  - do a dry run; append data from source to target db WITH corrections file;",
+        "      write diff output to file in LOG directory. If log file does not exist,",
+        "      print to screen.\n",
+        "aw  - append data from source to target db WITHOUT corrections file.\n",
+        "q   - quit this program\n",
         sep = "\n")
 
     cat("Type an option and press the 'Enter' key.\n")
@@ -63,6 +66,7 @@ main <- function() {
       diffs <- identify_lu_diffs(src_conn, tgt_conn)
       print_diffs(diffs)
       if (has_log_dir) {
+          cat("Writing log file...\n")
           write_diffs(diffs, LOG_DIR)
       }
       cat("\nDone!\n\n")
@@ -70,11 +74,39 @@ main <- function() {
       cat("Finding lookup table diffs...\n")
       diffs <- identify_lu_diffs(src_conn, tgt_conn)
       if (has_log_dir) {
+          cat("Writing log file...\n")
           write_diffs(diffs, LOG_DIR)
           cat("\nDone!\n\n")
       } else {
         cat("\nLog directory path not provided. Log file not created.\n\n")
       }
+    } else if (opt == 'ew') {
+      cat("Finding lookup table diffs...\n")
+      diffs <- identify_event_diffs(src_conn, tgt_conn)
+      print_diffs(diffs)
+      if (has_log_dir) {
+          cat("Writing log file...\n")
+          write_diffs(diffs, LOG_DIR)
+      }
+      cat("\nDone!\n\n")
+    } else if (opt == 'ewa') {
+      cat("Finding lookup table diffs...\n")
+      diffs <- identify_event_diffs(src_conn, tgt_conn, TRUE)
+      print_diffs(diffs)
+      if (has_log_dir) {
+          cat("Writing log file...\n")
+          write_diffs(diffs, LOG_DIR)
+      }
+      cat("\nDone!\n\n")
+    } else if (opt == 'ow') {
+      cat("Finding lookup table diffs...\n")
+      diffs <- identify_obs_diffs(src_conn, tgt_conn)
+      print_diffs(diffs)
+      if (has_log_dir) {
+          cat("Writing log file...\n")
+          write_diffs(diffs, LOG_DIR)
+      }
+      cat("\nDone!\n\n")
     } else if (opt == 'ac') {
       if (has_corr_file) {
         cat("Appending data...\n")
@@ -88,6 +120,7 @@ main <- function() {
         cat("Appending data...\n")
         diffs <- append_peregrine_data(src_conn, tgt_conn, CORRECTIONS_CSV, dry_run = TRUE)
         if (has_log_dir) {
+            cat("Writing log file...\n")
             write_diffs(diffs, LOG_DIR, dry_run = TRUE)
         } else {
             print_diffs(diffs)

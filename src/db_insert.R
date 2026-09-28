@@ -57,23 +57,17 @@ append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, d
     return(value)
   }
 
-  format_datetime <- function(dt) {
-    as.POSIXct(dt,
-               "%Y-%m-%dT%H:%M:%S",
-               tz="UTC")
-  }
-
   ## Map new ID's. Format datetime columns.
   src_survey_event <- src_survey_event |>
     dplyr::mutate(survey_event_id = get_map_value(tgt_event_id_map, survey_event_id)) |>
-    dplyr::mutate(record_inserted_date = format_datetime(record_inserted_date)) |>
-    dplyr::mutate(record_updated_date = format_datetime(record_updated_date))
+    dplyr::mutate(record_inserted_date = format_datetime_utc(record_inserted_date)) |>
+    dplyr::mutate(record_updated_date = format_datetime_utc(record_updated_date))
 
   src_survey_obs <- src_survey_obs |>
     dplyr::mutate(survey_event_id = get_map_value(tgt_event_id_map, survey_event_id)) |>
     dplyr::mutate(survey_observation_id = get_map_value(tgt_obs_id_map, survey_observation_id)) |>
-    dplyr::mutate(record_inserted_date = format_datetime(record_inserted_date)) |>
-    dplyr::mutate(record_updated_date = format_datetime(record_updated_date))
+    dplyr::mutate(record_inserted_date = format_datetime_utc(record_inserted_date)) |>
+    dplyr::mutate(record_updated_date = format_datetime_utc(record_updated_date))
 
 
   # Drop extraneous columns
