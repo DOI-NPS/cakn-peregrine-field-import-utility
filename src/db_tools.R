@@ -47,3 +47,25 @@ format_date_ak  <- function(d) {
              "%Y-%m-%d",
              tz="America/Anchorage")
 }
+
+create_logger <- function() {
+  env <- new.env()
+  env$log <- ""
+  return(env)
+}
+
+write_log <- function(log, dir_path) {
+    file_path <- file.path(dir_path, paste0("append_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
+    writeLines(log, file_path)
+}
+
+get_log_info <- function() {
+  info <- paste0(
+    "========================================================================================\n",
+    "LOG INFO\n",
+    "========================================================================================\n",
+    "USER: ", Sys.info()[["user"]], "\n",
+    "DATETIME: ", format(Sys.time(), "%B %d, %Y %H:%M:%S"), "\n\n")
+
+  return(info)
+}

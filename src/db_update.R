@@ -15,7 +15,7 @@
 ## between src and tgt, "field_id_value" is the value from the field database, and
 ## "new_id_value" is the value we want to update it to. If this is not a string, no
 ## updates are made.
-update_src <- function(src_tbl_list, corrections_csv = FALSE) {
+update_src <- function(src_tbl_list, corrections_csv = NULL) {
 
   if (is.character(corrections_csv)) {
     src_tbl_names <- c("survey_event", "survey_observation")

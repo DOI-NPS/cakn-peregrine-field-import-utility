@@ -1,20 +1,36 @@
 
-append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, dry_run = FALSE) {
+append_peregrine_data <- function(src_conn, tgt_conn, logger, corrections_csv = NULL, dry_run = FALSE) {
   # ---------------------------
   # Read data
   # ---------------------------
 
+  logger$log <- get_log_info()
+  logger$log <- paste0(logger$log, "Append data logging...", "\n")
+  logger$log <- paste0(logger$log, "- Get SOURCE table survey_event data.\n")
+
   src_survey_event <- get_table(src_conn, "survey_event") |>
     select(-geom)
 
+  logger$log <- paste0(logger$log, "- Get SOURCE table survey_observation data.\n")
+
   src_survey_obs <- get_table(src_conn, "survey_observation")
+
 
   src_tbl_list <- list("survey_event" = src_survey_event,
                        "survey_observation" = src_survey_obs)
 
+  if (is.null(corrections_csv)) {
+    logger$log <- paste0(logger$log, "- CORRECTIONS_CSV file not supplied. Source table survey_event NOT updated.\n")
+  } else {
+    logger$log <- paste0(logger$log, "- UPDATE survey_event data with CORRECTIONS_CSV file.\n")
+  }
+
   src_tbl_list <- update_src(src_tbl_list, corrections_csv)
 
+
   if (dry_run) {
+    logger$log <- paste0(logger$log, "- Initiating DRY-RUN\n")
+
     event_diff <- diffdf::diffdf(src_survey_event, src_tbl_list$survey_event,
                                  suppress_warnings = TRUE,
                                  strict_numeric = FALSE)
@@ -23,6 +39,9 @@ append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, d
                                strict_numeric = FALSE)
 
     diffs <- list("survey_event" = event_diff, "survey_observation" = obs_diff)
+
+    logger$log <- paste0(logger$log, "- Finished DRY-RUN\n")
+
     return(diffs)
   }
 
@@ -76,8 +95,13 @@ append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, d
     # Append tables
     # batch_rows = 1 required for this to work in access: https://stackoverflow.com/questions/77002622/write-a-data-frame-to-an-existing-access-accdb-table-in-r
 
+    logger$log <- paste0(logger$log, "- APPEND source event data to target table survey_event.\n")
     DBI::dbAppendTable(tgt_conn, "survey_event", append_survey_event, batch_rows = 1)
+
+    logger$log <- paste0(logger$log, "- APPEND source observation data to target table survey_observation.\n")
     DBI::dbAppendTable(tgt_conn, "survey_observation", append_survey_obs, batch_rows = 1)
+
+    logger$log <- paste0(logger$log, "- UPDATE target event and observation table MVF columns.\n")
 
     # Insert data into multi-valued fields (MVF)
     insert_mvf(con = tgt_conn,
@@ -97,11 +121,17 @@ append_peregrine_data <- function(src_conn, tgt_conn, corrections_csv = FALSE, d
                id_column_name = "survey_observation_id")
 
     DBI::dbCommit(tgt_conn)
-    message("Success — changes committed.")
+
+    msg <- "Success -- changes committed."
+    message(msg)
+    logger$log <- paste0(logger$log, "\n", msg, "\n")
   },
   error = function(e) {
     dbRollback(tgt_conn)
-    message("Error occurred, changes rolled back: ", e$message)
+
+    msg <- paste0("Error occurred, changes rolled back: ", e$message)
+    message(msg)
+    logger$log <- paste0(logger$log, "\n", msg, "\n")
   }
   )
 }
