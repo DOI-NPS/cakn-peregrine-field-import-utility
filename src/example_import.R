@@ -45,6 +45,13 @@ main <- function() {
 
   repeat {
     logger$log <- ""
+    logger$log <- paste0("File/directory paths: \n",
+                         "Script name: ", basename(this.path()) , "\n",
+                         "Script working dir: ", this.path::here() , "\n\n",
+                         "SRC_CONN_STR: ", SRC_CONN_STR, "\n",
+                         "TGT_CONN_STR: ", TGT_CONN_STR, "\n",
+                         "CORRECTIONS_CSV: ", TGT_CONN_STR, "\n",
+                         "LOG_DIR: ", LOG_DIR, "\n\n")
 
     cat("Options:",
         "lp  - print LOOKUP table diffs to screen AND write to a log file in LOG_DIR (if exists)",

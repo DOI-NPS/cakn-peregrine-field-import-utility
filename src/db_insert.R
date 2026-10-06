@@ -4,7 +4,7 @@ append_peregrine_data <- function(src_conn, tgt_conn, logger, corrections_csv = 
   # Read data
   # ---------------------------
 
-  logger$log <- get_log_info()
+  logger$log <- paste0(get_log_info(), logger$log)
   logger$log <- paste0(logger$log, "Append data logging...", "\n")
   logger$log <- paste0(logger$log, "- Get SOURCE table survey_event data.\n")
 
