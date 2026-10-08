@@ -10,13 +10,22 @@ source("db_update.R")
 source("db_insert.R")
 source("db_diff.R")
 
-SRC_CONN_STR <- "c:/file/path/source_db.gpkg"
-TGT_CONN_STR <- "Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=target_db.accdb"
+SRC_CONN_STR <- "c:/fake/path/source_db.gpkg"
+
+TGT_DB_SRC_PATH <- "c:/fake/path/target_db.accdb"
+NEW_TGT_DB_PATH <- inject_dt_into_fpath(TGT_DB_SRC_PATH)
+
+TGT_CONN_STR <- paste0("Driver={Microsoft Access Driver (*.mdb, *.accdb)};Dbq=", NEW_TGT_DB_PATH)
 
 CORRECTIONS_CSV <- "c:/fake/path/corrections.csv"
 LOG_DIR <- "c:/fake/dir_path"
 
 main <- function() {
+  ## Make a copy of the target source db, and work on that copy.
+  if (! copy_file(TGT_DB_SRC_PATH, NEW_TGT_DB_PATH)) {
+    stop("File copy failed: check paths exist and permissions are correct.")
+  }
+
   src_conn <- get_sqlite_connection(SRC_CONN_STR)
   tgt_conn <- get_access_connection(TGT_CONN_STR)
 
@@ -48,9 +57,10 @@ main <- function() {
     logger$log <- paste0("File/directory paths: \n",
                          "Script name: ", basename(this.path()) , "\n",
                          "Script working dir: ", this.path::here() , "\n\n",
-                         "SRC_CONN_STR: ", SRC_CONN_STR, "\n",
-                         "TGT_CONN_STR: ", TGT_CONN_STR, "\n",
-                         "CORRECTIONS_CSV: ", TGT_CONN_STR, "\n",
+                         "Source geopackage: ", SRC_CONN_STR, "\n",
+                         "Target db source: ", TGT_DB_SRC_PATH, "\n",
+                         "Updated target db: ", NEW_TGT_DB_PATH, "\n",
+                         "Corrections file: ", CORRECTIONS_CSV, "\n",
                          "LOG_DIR: ", LOG_DIR, "\n\n")
 
     cat("Options:",

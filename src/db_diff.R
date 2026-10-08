@@ -79,9 +79,9 @@ format_event_tbl <- function(tbl_df) {
 
 write_diffs <- function(diffs, dir_path, dry_run = FALSE) {
   if (dry_run) {
-    file <- file.path(dir_path, paste0("dry_run_diff_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
+    file <- file.path(dir_path, paste0("dry_run_diff_log_", get_datetime_str(), ".txt"))
   } else {
-    file <- file.path(dir_path, paste0("diff_log_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt"))
+    file <- file.path(dir_path, paste0("diff_log_", get_datetime_str(), ".txt"))
   }
 
   success <- file.create(file, showWarnings = FALSE)
