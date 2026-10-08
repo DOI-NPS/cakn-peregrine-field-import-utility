@@ -2,8 +2,9 @@ library(odbc)
 library(DBI)
 library(RSQLite)
 library(tidyverse)
-library(here)
 library(diffdf)
+library(this.path)
+library(tools)
 
 source("db_tools.R")
 source("db_update.R")
@@ -97,10 +98,10 @@ main <- function() {
       if (has_log_dir) {
           cat("Writing DIFF log file...\n")
           write_diffs(diffs, LOG_DIR)
-          cat("\nDone!\n\n")
       } else {
         cat("\nLog directory path not provided. Log file not created.\n\n")
       }
+      cat("\nDone!\n\n")
     } else if (opt == 'ew') {
       cat("Finding lookup table diffs...\n")
       diffs <- identify_event_diffs(src_conn, tgt_conn)
