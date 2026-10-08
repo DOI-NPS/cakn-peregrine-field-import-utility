@@ -81,57 +81,57 @@ update_src <- function(src_tbl_list, corrections_csv = NULL) {
 }
 
 read_corr_file <- function(corrections_csv) {
-    corrections <- readr::read_csv(corrections_csv) |>
-      arrange(lu_table_name, desc(new_id_value)) # Sort to avoid overwriting changed values
-    return(corrections)
+  corrections <- readr::read_csv(corrections_csv) |>
+    arrange(lu_table_name, desc(new_id_value)) # Sort to avoid overwriting changed values
+  return(corrections)
 }
 
 get_event_fk_df <- function() {
-    fk_df <- tibble(fk_tbl_name = c("whitewash_lu",
-                                    "observer_lu",
-                                    "observer_lu",
-                                    "nest_observation_lu",
-                                    "truth_lu",
-                                    "site",
-                                    "site"),
-                    fk_col_name = c("whitewash_lu_id",
-                                    "senior_observer",
-                                    "scribe_initials",
-                                    "nest_observation_lu_id",
-                                    "call_broadcast",
-                                    "site_id",
-                                    "concurrent_obs_sites"),
-                    is_mvf = c(FALSE,
-                               FALSE,
-                               FALSE,
-                               FALSE,
-                               FALSE,
-                               FALSE,
-                               TRUE))
-    return(fk_df)
+  fk_df <- tibble(fk_tbl_name = c("whitewash_lu",
+                                  "observer_lu",
+                                  "observer_lu",
+                                  "nest_observation_lu",
+                                  "truth_lu",
+                                  "site",
+                                  "site"),
+                  fk_col_name = c("whitewash_lu_id",
+                                  "senior_observer",
+                                  "scribe_initials",
+                                  "nest_observation_lu_id",
+                                  "call_broadcast",
+                                  "site_id",
+                                  "concurrent_obs_sites"),
+                  is_mvf = c(FALSE,
+                             FALSE,
+                             FALSE,
+                             FALSE,
+                             FALSE,
+                             FALSE,
+                             TRUE))
+  return(fk_df)
 }
 
 get_obs_fk_df <- function() {
-    fk_df <- tibble(fk_tbl_name = c("species_lu",
-                                    "nesting_stage_lu",
-                                    "nest_content_lu",
-                                    "truth_lu",
-                                    "observer_lu",
-                                    "activity_lu",
-                                    "site"),
-                    fk_col_name = c("species_id",
-                                    "nesting_stage_lu_id",
-                                    "nest_content_id",
-                                    "is_nest_count_estimated",
-                                    "field_proofed_by",
-                                    "activity_code",
-                                    "additional_sites_used"),
-                    is_mvf = c(FALSE,
-                               FALSE,
-                               FALSE,
-                               FALSE,
-                               FALSE,
-                               TRUE,
-                               TRUE))
-    return(fk_df)
+  fk_df <- tibble(fk_tbl_name = c("species_lu",
+                                  "nesting_stage_lu",
+                                  "nest_content_lu",
+                                  "truth_lu",
+                                  "observer_lu",
+                                  "activity_lu",
+                                  "site"),
+                  fk_col_name = c("species_id",
+                                  "nesting_stage_lu_id",
+                                  "nest_content_id",
+                                  "is_nest_count_estimated",
+                                  "field_proofed_by",
+                                  "activity_code",
+                                  "additional_sites_used"),
+                  is_mvf = c(FALSE,
+                             FALSE,
+                             FALSE,
+                             FALSE,
+                             FALSE,
+                             TRUE,
+                             TRUE))
+  return(fk_df)
 }

@@ -55,12 +55,12 @@ create_logger <- function() {
 }
 
 write_log <- function(log, dir_path) {
-    file_path <- file.path(dir_path, paste0("append_log_", get_datetime_str(), ".txt"))
-    writeLines(log, file_path)
+  file_path <- file.path(dir_path, paste0("append_log_", get_datetime_str(), ".txt"))
+  writeLines(log, file_path)
 }
 
 get_datetime_str <- function() {
-    return(format(Sys.time(), "%Y-%m-%dT%H.%M.%S"))
+  return(format(Sys.time(), "%Y-%m-%dT%H.%M.%S"))
 }
 
 get_log_info <- function() {
