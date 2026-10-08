@@ -6,15 +6,17 @@
 ## the lookup table itself, the approach is to update the values in
 ## src_survey_event and src_survey_observation in R memory prior to inserting
 ## records into tgt.
+##
 ## Parameter(s):
 ##   src_tbl_list: list of source tables (tibbles) to modify.
-##     - The names of the list must be either "survey_event" or "survey_observation".
+##     The names in the list must be either "survey_event" or "survey_observation".
+##
 ##   corrections_csv: file path to CSV explaining which id values to update from
-## each lookup table. Must contain three columns: "lu_table_name", "field_id_value",
-## and "new_id_value". "lu_table_name" indicates which lookup table is out of synch
-## between src and tgt, "field_id_value" is the value from the field database, and
-## "new_id_value" is the value we want to update it to. If this is not a string, no
-## updates are made.
+##     each lookup table. Must contain three columns: "lu_table_name", "field_id_value",
+##     and "new_id_value". "lu_table_name" indicates which lookup table is out of synch
+##     between src and tgt, "field_id_value" is the value from the field database, and
+##     "new_id_value" is the value we want to update it to. If this is not a string, no
+##     updates are made.
 update_src <- function(src_tbl_list, corrections_csv = NULL) {
 
   if (is.character(corrections_csv)) {
