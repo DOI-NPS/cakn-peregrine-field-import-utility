@@ -83,7 +83,8 @@ update_src <- function(src_tbl_list, corrections_csv = NULL) {
 }
 
 read_corr_file <- function(corrections_csv) {
-  corrections <- readr::read_csv(corrections_csv) |>
+  corrections <- readr::read_csv(corrections_csv,
+                                 show_col_types = FALSE) |>
     arrange(lu_table_name, desc(new_id_value)) # Sort to avoid overwriting changed values
   return(corrections)
 }
