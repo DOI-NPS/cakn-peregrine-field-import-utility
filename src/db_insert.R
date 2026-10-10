@@ -4,32 +4,39 @@ append_peregrine_data <- function(src_conn, tgt_conn, logger, corrections_csv = 
   # Read data
   # ---------------------------
 
-  logger$log <- paste0(get_log_info(), logger$log)
-  logger$log <- paste0(logger$log, "Append data logging...", "\n")
-  logger$log <- paste0(logger$log, "- Get SOURCE table survey_event data.\n")
+  append_log <- function(log_str) {
+    logger$log <- paste0(logger$log, log_str)
+  }
+
+  append_log("Append data logging...\n")
+  append_log("- Get SOURCE table survey_event data.\n")
 
   src_survey_event <- get_table(src_conn, "survey_event") |>
-    select(-geom)
+    select(-geom) |>
+    mutate(survey_date = format_date_ak(survey_date))
 
-  logger$log <- paste0(logger$log, "- Get SOURCE table survey_observation data.\n")
+  append_log("- Get TARGET table survey_event data.\n")
+
+  tgt_survey_event <- get_table(tgt_conn, "survey_event")
+
+  append_log("- Get SOURCE table survey_observation data.\n")
 
   src_survey_obs <- get_table(src_conn, "survey_observation")
-
 
   src_tbl_list <- list("survey_event" = src_survey_event,
                        "survey_observation" = src_survey_obs)
 
   if (is.null(corrections_csv)) {
-    logger$log <- paste0(logger$log, "- CORRECTIONS_CSV file not supplied. Source table survey_event NOT updated.\n")
+    append_log("- CORRECTIONS_CSV file not supplied. Source table survey_event NOT updated.\n")
   } else {
-    logger$log <- paste0(logger$log, "- UPDATE survey_event data with CORRECTIONS_CSV file.\n")
+    append_log("- UPDATE survey_event data with CORRECTIONS_CSV file.\n")
   }
 
+  ## Update lookup table ID's.
   src_tbl_list <- update_src(src_tbl_list, corrections_csv)
 
-
   if (dry_run) {
-    logger$log <- paste0(logger$log, "- Initiating DRY-RUN\n")
+    append_log("- Initiating DRY-RUN\n")
 
     event_diff <- diffdf::diffdf(src_survey_event, src_tbl_list$survey_event,
                                  suppress_warnings = TRUE,
@@ -40,13 +47,52 @@ append_peregrine_data <- function(src_conn, tgt_conn, logger, corrections_csv = 
 
     diffs <- list("survey_event" = event_diff, "survey_observation" = obs_diff)
 
-    logger$log <- paste0(logger$log, "- Finished DRY-RUN\n")
+    append_log("- Finished DRY-RUN\n")
 
     return(diffs)
   }
 
   src_survey_event <- src_tbl_list$survey_event
   src_survey_obs <- src_tbl_list$survey_observation
+
+  n_src_event <- nrow(src_survey_event)
+  n_src_obs <- nrow(src_survey_obs)
+
+  append_log(paste0(n_src_event, " - source survey_event records.\n"))
+  append_log(paste0(n_src_obs, " - source survey_observation records.\n"))
+
+  ## Remove source event records that already exist in
+  ## tgt_survey_event.
+  alternate_keys <- c("site_id", "survey_date", "start_time", "senior_observer")
+  src_survey_event <- xdf_not_in_ydf(src_survey_event, tgt_survey_event, alternate_keys)
+
+  src_event_dups <- get_df_dups(src_survey_event, alternate_keys)
+
+  ## Check for duplicates in source survey events.
+  if (nrow(src_event_dups) > 0) {
+    dups_vec <- capture.output(print(src_event_dups))
+    dups_str <- paste(dups_vec, collapse = "\n")
+
+    append_log(paste0("Duplicates in source survey_event table:\n\n",
+                      dups_str, "\n\n"))
+  }
+
+  ## Remove source observation records that don't match
+  ## src_survey_event primary key ID.
+  src_survey_obs <- dplyr::semi_join(src_survey_obs, src_survey_event, "survey_event_id")
+
+  n_src_event_flt <- nrow(src_survey_event)
+  n_src_obs_flt <- nrow(src_survey_obs)
+
+  append_log(paste0(n_src_event_flt, " - source survey_event records to be inserted.\n"))
+  append_log(paste0(n_src_obs_flt, " - source survey_observation records to be inserted.\n"))
+
+  if (nrow(src_survey_event) == 0) {
+    msg <- paste0("\n- No records to be inserted. All records from source db already exist in target db.\n")
+    message(msg)
+    append_log(msg)
+    return()
+  }
 
   max_tgt_event_id <- get_query(tgt_conn,
                                 paste("SELECT max(survey_event_id) AS max_id",
@@ -95,13 +141,13 @@ append_peregrine_data <- function(src_conn, tgt_conn, logger, corrections_csv = 
     # Append tables
     # batch_rows = 1 required for this to work in access: https://stackoverflow.com/questions/77002622/write-a-data-frame-to-an-existing-access-accdb-table-in-r
 
-    logger$log <- paste0(logger$log, "- APPEND source event data to target table survey_event.\n")
+    append_log("- APPEND source event data to target table survey_event.\n")
     DBI::dbAppendTable(tgt_conn, "survey_event", append_survey_event, batch_rows = 1)
 
-    logger$log <- paste0(logger$log, "- APPEND source observation data to target table survey_observation.\n")
+    append_log("- APPEND source observation data to target table survey_observation.\n")
     DBI::dbAppendTable(tgt_conn, "survey_observation", append_survey_obs, batch_rows = 1)
 
-    logger$log <- paste0(logger$log, "- UPDATE target event and observation table MVF columns.\n")
+    append_log("- UPDATE target event and observation table MVF columns.\n")
 
     # Insert data into multi-valued fields (MVF)
     insert_mvf(con = tgt_conn,
@@ -122,18 +168,41 @@ append_peregrine_data <- function(src_conn, tgt_conn, logger, corrections_csv = 
 
     DBI::dbCommit(tgt_conn)
 
+    append_log(paste0(n_src_event_flt, " - source survey_event records inserted into target db.\n"))
+    append_log(paste0(n_src_obs_flt, " - source survey_observation records inserted into target db.\n\n"))
+
     msg <- "Success -- changes committed."
     message(msg)
-    logger$log <- paste0(logger$log, "\n", msg, "\n")
+    append_log(paste0("\n", msg, "\n"))
   },
   error = function(e) {
     dbRollback(tgt_conn)
 
-    msg <- paste0("Error occurred, changes rolled back: ", e$message)
+    msg <- paste0("Error occurred, ALL ATTEMPTED INSERTS rolled back: ", e$message)
     message(msg)
-    logger$log <- paste0(logger$log, "\n", msg, "\n")
+    append_log(paste0("\n", msg, "\n"))
   }
   )
+}
+
+xdf_not_in_ydf <- function(x_df, y_df, keys) {
+  join <- dplyr::semi_join(x_df, y_df, by = keys)
+
+  if (nrow(join) > 0) {
+    ret <- dplyr::anti_join(x_df, join, by = keys)
+  } else {
+    ret <- x_df
+  }
+  return(ret)
+}
+
+get_df_dups <- function(df, keys) {
+  df <- df |>
+    group_by(across(all_of(keys))) |>
+    filter(n() > 1) |>
+    ungroup()
+
+  return(df)
 }
 
 ## Purpose: return a named vector to act as a dictionary.

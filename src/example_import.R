@@ -55,7 +55,9 @@ main <- function() {
 
   repeat {
     logger$log <- ""
-    logger$log <- paste0("File/directory paths: \n",
+    logger$log <- get_log_info()
+    logger$log <- paste0(logger$log,
+                         "File/directory paths: \n",
                          "Script name: ", basename(this.path()) , "\n",
                          "Script working dir: ", this.path::here() , "\n\n",
                          "Source geopackage: ", SRC_CONN_STR, "\n",
