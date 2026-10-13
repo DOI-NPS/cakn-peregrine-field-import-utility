@@ -2,7 +2,7 @@
   {
     "name": "cakn-peregrine-field-import-utility",
     "organization": "NATIONAL PARK SERVICE",
-    "description": "",
+    "description": "QGIS/QField geopackage db to MS Access db import utiltiy",
     "version": "1.0.0",
     "status": "ongoing development",
     "permissions": {
