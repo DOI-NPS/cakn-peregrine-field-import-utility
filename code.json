@@ -1,0 +1,39 @@
+[
+  {
+    "name": "cakn-peregrine-field-import-utility",
+    "organization": "NATIONAL PARK SERVICE",
+    "description": "",
+    "version": "1.0.0",
+    "status": "ongoing development",
+    "permissions": {
+      "usageType": "openSource",
+      "licenses": [
+        {
+          "name": "Public Domain, CC0-1.0",
+          "URL": "https://github.com/DOI-NPS/cakn-peregrine-field-import-utility"
+        }
+      ]
+    },
+    "homepageURL": "https://github.com/DOI-NPS/cakn-peregrine-field-import-utility",
+    "downloadURL": "https://github.com/DOI-NPS/cakn-peregrine-field-import-utility",
+    "disclaimerURL": "https://github.com/DOI-NPS/cakn-peregrine-field-import-utility/blob/main/LICENSE",
+    "repositoryURL": "https://github.com/DOI-NPS/cakn-peregrine-field-import-utility",
+    "vcs": "git",
+    "laborHours": 1,
+    "tags": [
+      "NRSS",
+      "IMD",
+      "CAKN"
+    ],
+    "languages": [
+      "R"
+    ],
+    "contact": {
+      "name": "Nick Bywater",
+      "email": "nicklas_bywater@ios.doi.gov"
+    },
+    "date": {
+      "metadataLastUpdated": "2026-10-13
+    }
+  }
+]

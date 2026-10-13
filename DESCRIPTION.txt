@@ -1,0 +1,14 @@
+Package: cakn-peregrine-field-import-utility
+Title: QGIS/QField geopackage db to MS Access db import utiltiy
+Version: 1.0.0
+Authors@R: c(
+    person(given="Liam", family="Smith", email="liam_smith@nps.gov",
+           role = c("aut", "cre")),
+    person(given="Nick", family="Bywater", email="nicklas_bywater@ios.doi.gov",
+           role = c("aut", "cre"))
+    )
+Description: Provides a set of functions (and example script) to import collected field data from a QGIS/QField geopackage and insert into a target peregrine MS Access database.
+License: CC0 + file LICENSE
+Encoding: UTF-8
+URL: https://github.com/DOI-NPS/cakn-peregrine-field-import-utility
+BugReports: https://github.com/DOI-NPS/cakn-peregrine-field-import-utility/issues
