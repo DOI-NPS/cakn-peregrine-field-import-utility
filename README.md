@@ -125,7 +125,8 @@ target database.
 
 The append operation conducts the following steps:
 
-- Update the source tables with corrected lookup table values.
+- Update the source tables (as data frames) with corrected lookup
+  table values.
 - Determine which records in the source event's table already exist in
   the target events table. Subtract these records from the source
   events and observation records (where the events ID are equal); the
