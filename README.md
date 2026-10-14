@@ -46,13 +46,13 @@ Once the file `example_import.R` has been sourced, the function `main`
 is then executed from the R-prompt. Before `main` enters the user's
 interactive options loop, it first copies the target database referred
 to by global variable `TGT_DB_SRC_PATH` to the file referred to by
-global variable `NEW_TGT_DB_PATH`. It then establishes databased
+global variable `NEW_TGT_DB_PATH`. It then establishes database
 connections to the source and target databases indicated by variables
 `SRC_CONN_STR` and `TGT_CONN_STR` (which uses the value in
 `NEW_TGT_DB_PATH` for its database).
 
 It then creates a logger environment variable that is used to log the
-qlobal variable settings and the append (insert) operations of the
+global variable settings and the append (insert) operations of the
 `append_peregrine_data` function. This log is then written to a log
 file in the directory `LOG_DIR`. **NOTE:** this log is written only
 for options `ac`, `aw`, and `dr`.
@@ -61,7 +61,7 @@ It then enters the interactive prompt for user options.
 
 # User options
 
-User options, from the example script, are typcially divided amongst
+User options, from the example script, are typically divided amongst
 *append* and *diff* operations, and how these operations are either
 displayed to the user or logged to a file; that is, so-called
 *print* or *log* operations.
@@ -101,17 +101,17 @@ By default, it writes a file to the directory `LOG_DIR`.
 Option `ac` ("append WITH corrections") appends (inserts) database
 records from the source database tables `survey_event` and
 `survey_observation` into the same named tables of the target database
-indictated by the variable `NEW_TGT_DB_PATH`, *with a correction's
+indicated by the variable `NEW_TGT_DB_PATH`, *with a corrections
 file* that indicates substitute values necessary for the lookup table
 values of the source database table records before they can be
 properly inserted into the target database tables. **NOTE:** recall,
 however, that the variable `CORRECTIONS_CSV` can be assigned `NULL`;
 so it would still attempt to append the data in this case; but no
-lookup table corrections would be made to the source databse tables.
+lookup table corrections would be made to the source database tables.
 
 Option `aw` ("append WITHOUT corrections") performs the same operation
 as option `ac` *without* a corrections file; that is, regardless if a
-correction's file is assigned to the global variable
+corrections file is assigned to the global variable
 `CORRECTIONS_CSV`.
 
 Option `dr` ("DRY-RUN") *begins* the above mentioned append
@@ -129,7 +129,7 @@ The append operation conducts the following steps:
   table values.
 - Determine which records in the source event's table already exist in
   the target events table. Subtract these records from the source
-  events and observation records (where the events ID are equal); the
+  events and observation records (where the event IDs are equal); the
   remaining source event and observation records will be inserted.
 - Determine if duplicate records exist in the source events table. If
   they do, append the table of duplicates to the logger log. **NOTE:**
@@ -137,8 +137,8 @@ The append operation conducts the following steps:
   target database; this will generate an error, and ultimately, the
   append operation will be rolled back. This error will also be logged
   to the logger and written to the log file.
-- Append source event and observation records to to target tables
-  (without mult-valued columns).
+- Append source event and observation records to the target tables
+  (without multi-valued columns).
 - Update multi-valued-field values in the target with (possibly
   corrected) multi-value-field values from the source. **NOTE:** this
   is *counterintuitively* an *insert* operation due to how MS Access
