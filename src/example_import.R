@@ -22,6 +22,20 @@ CORRECTIONS_CSV <- "c:/fake/path/corrections.csv"
 LOG_DIR <- "c:/fake/dir_path"
 
 main <- function() {
+  has_corr_file <- has_path(CORRECTIONS_CSV)
+
+  if (is.null(has_corr_file)) {
+      stop("The value of Variable 'CORRECTIONS_CSV' must be 'NULL' OR ",
+           "a string of a valid file path.")
+  }
+
+  has_log_dir <- has_path(LOG_DIR)
+
+  if (is.null(has_log_dir)) {
+      stop("The value variable 'LOG_DIR' must be 'NULL' OR ",
+           "a string of a valid directory path.")
+  }
+
   ## Make a copy of the target source db, and work on that copy.
   if (! copy_file(TGT_DB_SRC_PATH, NEW_TGT_DB_PATH)) {
     stop("File copy failed: check paths exist and permissions are correct.")
@@ -36,20 +50,6 @@ main <- function() {
     DBI::dbDisconnect(src_conn)
     DBI::dbDisconnect(tgt_conn)
   }, add = TRUE)
-
-  has_corr_file <- has_path(CORRECTIONS_CSV)
-
-  if (is.null(has_corr_file)) {
-      stop("The value of Variable 'CORRECTIONS_CSV' must be 'NULL' OR ",
-           "a string of a valid file path.")
-  }
-
-  has_log_dir <- has_path(LOG_DIR)
-
-  if (is.null(has_log_dir)) {
-      stop("The value variable 'LOG_DIR' must be 'NULL' OR ",
-           "a string of a valid directory path.")
-  }
 
   logger <- create_logger()
 
