@@ -7,8 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+
+- Add files: `CHANGELOG.md`, `DESCRIPTION.txt`, and `code.jon`.
+- Add `else` clause to function `has_path` to explicitly return
+  `NULL`, rather than implicitly.
+- Add `else` clause to option `lw`; print to screen that log directory
+  not provided.
+
 ### Removed
 ### Changed
+
+- Refactor. Improve option `lw` wording.
+- Update the `README.md` file to document this utility's operation.
+
 ### Fixed
 
 ## [1.0.0] 2026-10-08
