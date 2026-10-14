@@ -19,6 +19,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 - Refactor. Improve option `lw` wording.
 - Update the `README.md` file to document this utility's operation.
+- Refactor. Make the order of the correction and log file tests first.
+  Don't copy database if these tests are goint to fail and stop the
+  program.
 
 ### Fixed
 
