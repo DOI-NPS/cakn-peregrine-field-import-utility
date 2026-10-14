@@ -42,11 +42,11 @@ function `main` is executed.
 
 ## `main()` execution
 
-Once the file file `example_import.R` has been sourced, the function
-`main` is then executed from the R-prompt. Before `main` enters the
-user's interactive options loop, it first copies the target database
-referred to by global variable `TGT_DB_SRC_PATH` to the file referred
-to by global variable `NEW_TGT_DB_PATH`. It then establishes databased
+Once the file `example_import.R` has been sourced, the function `main`
+is then executed from the R-prompt. Before `main` enters the user's
+interactive options loop, it first copies the target database referred
+to by global variable `TGT_DB_SRC_PATH` to the file referred to by
+global variable `NEW_TGT_DB_PATH`. It then establishes databased
 connections to the source and target databases indicated by variables
 `SRC_CONN_STR` and `TGT_CONN_STR` (which uses the value in
 `NEW_TGT_DB_PATH` for its database).
@@ -140,7 +140,7 @@ The append operation conducts the following steps:
   (without mult-valued columns).
 - Update multi-valued-field values in the target with (possibly
   corrected) multi-value-field values from the source. **NOTE:** this
-  is *counterintuitively* an "insert* operation due to how MS Access
+  is *counterintuitively* an *insert* operation due to how MS Access
   stores multi-valued-fields.
 - Write logger log to log file in directory `LOG_DIR`.
 
