@@ -68,7 +68,7 @@ main <- function() {
 
     cat("Options:",
         "lp  - print LOOKUP table diffs to screen AND write to a log file in LOG_DIR (if exists)",
-        "lw  - print LOOKUP table diffs AND write to a log file in LOG_DIR (if exists)\n",
+        "lw  - write LOOKUP table diffs to a log file in LOG_DIR (if exists)\n",
         "ew  - print survey_EVENT table diffs AND write to a log file in LOG_DIR (if exists)",
         "ewa - print survey_EVENT table, using alternate key, diffs AND",
         "      write to a log file in LOG_DIR (if exists)\n",
@@ -92,6 +92,8 @@ main <- function() {
       if (has_log_dir) {
           cat("Writing DIFF log file...\n")
           write_diffs(diffs, LOG_DIR)
+      } else {
+        cat("\nLog directory path not provided. Log file not created.\n\n")
       }
       cat("\nDone!\n\n")
     } else if (opt == 'lw') {
@@ -181,5 +183,7 @@ has_path <- function(path) {
     return(FALSE)
   } else if (file.exists(path)) {
     return(TRUE)
+  } else {
+    return(NULL)
   }
 }
