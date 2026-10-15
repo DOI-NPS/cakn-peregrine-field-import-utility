@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
   `NULL`, rather than implicitly.
 - Add `else` clause to option `lw`; print to screen that log directory
   not provided.
+- Add file `CONTRIBUTING.md`.
 
 ### Removed
 ### Changed
